@@ -1,5 +1,5 @@
 ---
-title: "Learning journey, (kinda) guides, and some thoughts"
+title: "Yet Another Blog"
 listing:
   contents: posts
   sort: "date desc"
