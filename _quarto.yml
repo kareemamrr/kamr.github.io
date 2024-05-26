@@ -4,6 +4,7 @@ project:
 website:
   title: "Kareem Amr"
   site-url: https://kareemamrr.github.io/
+  favicon: profile.jpg
   navbar:
     right:
       - about.qmd
