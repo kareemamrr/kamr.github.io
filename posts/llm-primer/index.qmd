@@ -117,7 +117,7 @@ wandb_entity: <your_username>
 wandb_name: <optional_run_name>
 ```
 
-Notice how we specify our dataset type as `alpaca`. This is actually to tell Axolotl to format our dataset rows into the Alpaca prompt template. A prompt template is just a way to organize an instruction and its response and optionally its input, into a predetermined format so that the LLM learns; that's why we renamed our dataset columns earlier to the Alpaca column names.
+Notice how we specify our dataset type as `alpaca`. This is actually to tell Axolotl to format our dataset rows into the Alpaca prompt template. A prompt template is essentially the "key" that we use to overcome the LLM's autocomplete nature that it was pretrained on, and adapt it to answer questions or perform tasks. It is just a way to organize an instruction and its response (and optionally its input), into a predetermined format so that the LLM learns; that's the reason why we renamed our dataset columns earlier to the Alpaca column names.
 
 # Fine-tuning
 Finally, we can fine-tune. This is the easiest step. It is recommended we first run:
