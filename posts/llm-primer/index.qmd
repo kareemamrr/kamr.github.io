@@ -5,7 +5,7 @@ date: "2024-05-26"
 categories: [LLM, Axolotl, Code]
 ---
 
-![](https://raw.githubusercontent.com/jzhang38/TinyLlama/main/.github/TinyLlama_logo.png)
+![](https://raw.githubusercontent.com/jzhang38/TinyLlama/main/.github/TinyLlama_logo.png){width=500}
 
 # Intro
 
@@ -40,7 +40,9 @@ For W&B, head to the [authorize](https://wandb.ai/authorize) page, and copy your
 
 # Preprocessing
 Now would be a good time to check the [data](https://huggingface.co/datasets/databricks/databricks-dolly-15k) for yourself, HuggingFace offers a superb dataset viewer.
+
 ![](data.png)
+
 We can then load the dataset:
 ```py
 from datasets import load_dataset, concatenate_datasets
@@ -143,6 +145,7 @@ accelerate launch -m axolotl.cli.train examples/openllama-3b/lora.yml
 In about 10 seconds, the shell will prompt you to enter your W&B key that you got earlier, paste it in to track your run.
 
 This step can take a while depending on the machine you're using. While it is running, we can check on how our model's doing through W&B.
+
 ![W&B fine-tuning run metrics](wandb.png)
 
 ## Inference
