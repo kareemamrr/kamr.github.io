@@ -219,8 +219,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><img src="https://raw.githubusercontent.com/jzhang38/TinyLlama/main/.github/TinyLlama_logo.png" class="img-fluid" width="500"></p>
 <section id="intro" class="level1">
 <h1>Intro</h1>
-<p>I’ve recently been taking the <a href="https://maven.com/parlance-labs/fine-tuning">Mastering LLMs</a> course by Hamel Husain and Dan Becker, one of their suggestions was to document our journey in order to supplement the learning process</p>
-<p>In this blog entry, I will walk you through on of my first LLM fine-tuning experiment(s), with a bit of commentary here and there.</p>
+<p>LLMs have proven to be of extreme benefit to most if not all people, but they’re borderline useless in their “base” form. ChatGPT, Claude, Gemini and most others are all adapted to perform the conversational question answering we’re used to seeing; this is all made possible with fine-tuning.</p>
+<p>In this blog entry, I will walk you through one of my first LLM fine-tuning experiment(s), with a bit of commentary here and there.</p>
 </section>
 <section id="setup" class="level1">
 <h1>Setup</h1>
@@ -277,7 +277,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="configuration" class="level1">
 <h1>Configuration</h1>
-<p>Now for fine-tuning. As previously mentioned, Axolotl allows us to completely configure any part of our fine-tuning process using one configuration file, and it provides us with ready config files for most popular models. The one we’ll be using is <code>axolotl/examples/tiny-llama/lora.yml</code>. This file contains config parameters for the base model we’ll pull from HuggingFace, the tokenizer, LoRA/QLoRA parameters and much more. Since Axolotl provides us with pretty reasonable defaults to start with, we’ll only ammend a few sections.</p>
+<p>Now for fine-tuning. As previously mentioned, Axolotl allows us to completely configure any part of our fine-tuning process using one configuration file, and it provides us with ready config files for most popular models. The one we’ll be using is <code>axolotl/examples/tiny-llama/lora.yml</code> to train our model using LoRA (a form of parameter-efficient fine-tuning). This file contains config parameters for the base model we’ll pull from HuggingFace, the tokenizer, LoRA/QLoRA parameters and much more. Since Axolotl provides us with pretty reasonable defaults to start with, we’ll only ammend a few sections.</p>
 <section id="base-model" class="level2">
 <h2 class="anchored" data-anchor-id="base-model">Base Model</h2>
 <div class="sourceCode" id="cb6"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">base_model</span><span class="kw">:</span><span class="at"> TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T</span></span>
