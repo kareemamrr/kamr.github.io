@@ -1,17 +1,59 @@
 [
   {
-    "objectID": "posts/welcome/index.html",
-    "href": "posts/welcome/index.html",
-    "title": "Welcome To My Blog",
+    "objectID": "posts/llm-primer/index.html",
+    "href": "posts/llm-primer/index.html",
+    "title": "LLM Fine-Tuning: A Primer",
     "section": "",
-    "text": "This is the first post in a Quarto blog. Welcome!\n\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
+    "text": "I’ve recently been taking the Mastering LLMs course by Hamel Husain and Dan Becker, one of their suggestions was to document our journey in order to supplement the learning process\nIn this blog entry, I will walk you through on of my first LLM fine-tuning experiment(s), with a bit of commentary here and there."
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Yet Another Blog",
-    "section": "",
-    "text": "Post With Code\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nMay 26, 2024\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nMay 23, 2024\n\n\nTristan O’Malley\n\n\n\n\n\n\nNo matching items"
+    "objectID": "posts/llm-primer/index.html#installs",
+    "href": "posts/llm-primer/index.html#installs",
+    "title": "LLM Fine-Tuning: A Primer",
+    "section": "Installs",
+    "text": "Installs\nAll of the packages along with their versions are stated in the Axolotl requirements.txt, we will just need to install two more.\npip install datasets \"huggingface_hub[cli]\""
+  },
+  {
+    "objectID": "posts/llm-primer/index.html#api-keys",
+    "href": "posts/llm-primer/index.html#api-keys",
+    "title": "LLM Fine-Tuning: A Primer",
+    "section": "API Keys",
+    "text": "API Keys\nWe’re going to push our trained model and dataset to HuggingFace, and we’ll also track our fine-tuning runs with W&B, so we’re going to need our API keys for each of those.\nFor HF, go to your profile by clicking your avatar at the upper right corner of the screen, Settings -&gt; Access Tokens -&gt; New Token. Create one, give it write permissions and copy it. Then in the terminal run huggingface-cli login, paste your token and hit Enter. To verify that you’re logged in, you can run huggingface-cli whoami.\nFor W&B, head to the authorize page, and copy your key from there."
+  },
+  {
+    "objectID": "posts/llm-primer/index.html#base-model",
+    "href": "posts/llm-primer/index.html#base-model",
+    "title": "LLM Fine-Tuning: A Primer",
+    "section": "Base Model",
+    "text": "Base Model\nbase_model: TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T\nmodel_type: LlamaForCausalLM\ntokenizer_type: LlamaTokenizer"
+  },
+  {
+    "objectID": "posts/llm-primer/index.html#dataset",
+    "href": "posts/llm-primer/index.html#dataset",
+    "title": "LLM Fine-Tuning: A Primer",
+    "section": "Dataset",
+    "text": "Dataset\ndatasets:\n  - path: &lt;your_hf_username&gt;/databricks-dolly-15k\n    type: alpaca\ndataset_prepared_path:\nval_set_size: 0.05\noutput_dir: ./outputs/lora-out"
+  },
+  {
+    "objectID": "posts/llm-primer/index.html#hf-repo",
+    "href": "posts/llm-primer/index.html#hf-repo",
+    "title": "LLM Fine-Tuning: A Primer",
+    "section": "HF repo",
+    "text": "HF repo\nhub_model_id: &lt;username/repo_id&gt;"
+  },
+  {
+    "objectID": "posts/llm-primer/index.html#wb-runs",
+    "href": "posts/llm-primer/index.html#wb-runs",
+    "title": "LLM Fine-Tuning: A Primer",
+    "section": "W&B Runs",
+    "text": "W&B Runs\nwandb_project: &lt;project_name&gt;\nwandb_entity: &lt;your_username&gt;\nwandb_name: &lt;optional_run_name&gt;\nNotice how we specify our dataset type as alpaca. This is actually to tell Axolotl to format our dataset rows into the Alpaca prompt template. A prompt template is just a way to organize an instruction and its response and optionally its input, into a predetermined format so that the LLM learns; that’s why we renamed our dataset columns earlier to the Alpaca column names."
+  },
+  {
+    "objectID": "posts/llm-primer/index.html#inference",
+    "href": "posts/llm-primer/index.html#inference",
+    "title": "LLM Fine-Tuning: A Primer",
+    "section": "Inference",
+    "text": "Inference\nAfter you’re done fine-tuning, all model related files should be up on your HuggingFace. To you use our model:\nfrom peft import AutoPeftModelForCausalLM\nfrom transformers import AutoTokenizer\n\nmodel_id='&lt;username/repo_id&gt;'\nmodel = AutoPeftModelForCausalLM.from_pretrained(model_id).cuda()\ntokenizer = AutoTokenizer.from_pretrained(model_id)\nWe will need an extra piece of code to inject our dataset rows into a prompt template, similar to what Axolotl did automatically for us:\ndef prompt_with_inp(inst, inp):\n    return f\"\"\"Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\n\n### Instruction:\n{inst}\n\n### Input:\n{inp}\n\n### Response:\n\"\"\"\n\n\ndef prompt_wo_inp(inst):\n    return f\"\"\"Below is an instruction that describes a task, write a response that appropriately completes the request.\n\n### Instruction:\n{inst}\n\n### Response:\n\"\"\"\nand lastly a wrapper function to return the response:\ndef prompt_tok(inst, inp=None):\n    if inp is None:\n        _p = prompt_wo_inp(inst)\n    else:\n        _p = prompt_with_inp(inst, inp)\n    input_ids = tokenizer(_p, return_tensors=\"pt\", truncation=True).input_ids.cuda()\n    out_ids = model.generate(input_ids=input_ids, max_new_tokens=500, do_sample=False)\n    ids = out_ids.detach().cpu().numpy()\n    return tokenizer.batch_decode(ids, skip_special_tokens=False)[0]\nWe can then try our model:\ninst = \"Alice's parents have three daughters: Amy, Jessy, and what’s the name of the third daughter?\"\n\nout = prompt_tok(inst)\nprint(out.strip())\ninst = \"Who was boxer John Baldwin\"\ninp = \"Known as 'The Mad' Baldwin, he turned pro in 1970 and lost a decision to Marvin Hagler in 1975. In 1977 he took on Rocky Mosley Jr in the ill-fated U.S. Championship Tournament, but lost via K.O. In 1978 he lost a decision to Marvin Johnson, and retired a year later.\"\n\nout = prompt_tok(inst, inp)\nprint(out.strip())"
   },
   {
     "objectID": "about.html",
@@ -21,10 +63,10 @@
     "text": "Documenting my learning journey, (kinda) guides, and some thoughts"
   },
   {
-    "objectID": "posts/post-with-code/index.html",
-    "href": "posts/post-with-code/index.html",
-    "title": "Post With Code",
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Yet Another Blog",
     "section": "",
-    "text": "This is a post with executable code."
+    "text": "LLM Fine-Tuning: A Primer\n\n\n\n\n\n\nLLM\n\n\nAxolotl\n\n\nCode\n\n\n\n\n\n\n\n\n\nMay 26, 2024\n\n\nKareem Amr\n\n\n\n\n\n\nNo matching items"
   }
 ]
