@@ -202,10 +202,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#hf-repo" id="toc-hf-repo" class="nav-link" data-scroll-target="#hf-repo">HF repo</a></li>
   <li><a href="#wb-runs" id="toc-wb-runs" class="nav-link" data-scroll-target="#wb-runs">W&amp;B Runs</a></li>
   </ul></li>
-  <li><a href="#fine-tuning" id="toc-fine-tuning" class="nav-link" data-scroll-target="#fine-tuning">Fine-tuning</a>
-  <ul class="collapse">
+  <li><a href="#fine-tuning" id="toc-fine-tuning" class="nav-link" data-scroll-target="#fine-tuning">Fine-tuning</a></li>
   <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference">Inference</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -330,8 +328,9 @@ Twitter, Instagram, Telegram
 <figcaption>W&amp;B fine-tuning run metrics</figcaption>
 </figure>
 </div>
-<section id="inference" class="level2">
-<h2 class="anchored" data-anchor-id="inference">Inference</h2>
+</section>
+<section id="inference" class="level1">
+<h1>Inference</h1>
 <p>After you’re done fine-tuning, all model related files should be up on your HuggingFace. To you use our model:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> peft <span class="im">import</span> AutoPeftModelForCausalLM</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> AutoTokenizer</span>
@@ -383,7 +382,6 @@ Twitter, Instagram, Telegram
 <span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(out.strip())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
