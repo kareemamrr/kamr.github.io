@@ -1,5 +1,5 @@
 ---
-title: "kareemamrr.github.io"
+title: "Learning journey, (kinda) guides, and some thoughts"
 listing:
   contents: posts
   sort: "date desc"
