@@ -39,7 +39,7 @@
     "href": "posts/llm-primer/index.html#wb-runs",
     "title": "LLM Fine-Tuning: A Primer",
     "section": "W&B Runs",
-    "text": "W&B Runs\nwandb_project: &lt;project_name&gt;\nwandb_entity: &lt;your_username&gt;\nwandb_name: &lt;optional_run_name&gt;\nNotice how we specify our dataset type as alpaca. This is actually to tell Axolotl to format our dataset rows into the Alpaca prompt template. A prompt template is just a way to organize an instruction and its response and optionally its input, into a predetermined format so that the LLM learns; that’s why we renamed our dataset columns earlier to the Alpaca column names."
+    "text": "W&B Runs\nwandb_project: &lt;project_name&gt;\nwandb_entity: &lt;your_username&gt;\nwandb_name: &lt;optional_run_name&gt;\nNotice how we specify our dataset type as alpaca. This is actually to tell Axolotl to format our dataset rows into the Alpaca prompt template. A prompt template is essentially the “key” that we use to overcome the LLM’s autocomplete nature that it was pretrained on, and adapt it to answer questions or perform tasks. It is just a way to organize an instruction and its response (and optionally its input), into a predetermined format so that the LLM learns; that’s the reason why we renamed our dataset columns earlier to the Alpaca column names."
   },
   {
     "objectID": "posts/llm-primer/index.html#inference",
