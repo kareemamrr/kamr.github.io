@@ -1,12 +1,5 @@
 [
   {
-    "objectID": "posts/llm-primer/index.html",
-    "href": "posts/llm-primer/index.html",
-    "title": "LLM Fine-Tuning: A Primer",
-    "section": "",
-    "text": "I’ve recently been taking the Mastering LLMs course by Hamel Husain and Dan Becker, one of their suggestions was to document our journey in order to supplement the learning process\nIn this blog entry, I will walk you through on of my first LLM fine-tuning experiment(s), with a bit of commentary here and there."
-  },
-  {
     "objectID": "posts/llm-primer/index.html#installs",
     "href": "posts/llm-primer/index.html#installs",
     "title": "LLM Fine-Tuning: A Primer",
