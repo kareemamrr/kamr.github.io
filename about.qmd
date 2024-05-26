@@ -6,14 +6,14 @@ about:
   links:
     - icon: twitter
       text: Twitter
-      href: https://twitter.com
+      href: https://x.com/kxreem54
     - icon: linkedin
       text: LinkedIn
-      href: https://linkedin.com
+      href: https://www.linkedin.com/in/kareemamrr/
     - icon: github
       text: Github
-      href: https://github.com
+      href: https://github.com/kareemamrr
 
 ---
 
-About this blog
+Documenting my learning journey, (kinda) guides, and some thoughts
