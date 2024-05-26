@@ -148,7 +148,7 @@ This step can take a while depending on the machine you're using. While it is ru
 
 ![W&B fine-tuning run metrics](wandb.png)
 
-## Inference
+# Inference
 After you're done fine-tuning, all model related files should be up on your HuggingFace. To you use our model:
 ```py
 from peft import AutoPeftModelForCausalLM
