@@ -221,7 +221,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<p><img src="https://raw.githubusercontent.com/jzhang38/TinyLlama/main/.github/TinyLlama_logo.png" class="img-fluid"></p>
+<p><img src="https://raw.githubusercontent.com/jzhang38/TinyLlama/main/.github/TinyLlama_logo.png" class="img-fluid" width="500"></p>
 <section id="intro" class="level1">
 <h1>Intro</h1>
 <p>I’ve recently been taking the <a href="https://maven.com/parlance-labs/fine-tuning">Mastering LLMs</a> course by Hamel Husain and Dan Becker, one of their suggestions was to document our journey in order to supplement the learning process</p>
@@ -248,7 +248,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="preprocessing" class="level1">
 <h1>Preprocessing</h1>
-<p>Now would be a good time to check the <a href="https://huggingface.co/datasets/databricks/databricks-dolly-15k">data</a> for yourself, HuggingFace offers a superb dataset viewer. <img src="data.png" class="img-fluid"> We can then load the dataset:</p>
+<p>Now would be a good time to check the <a href="https://huggingface.co/datasets/databricks/databricks-dolly-15k">data</a> for yourself, HuggingFace offers a superb dataset viewer.</p>
+<p><img src="data.png" class="img-fluid"></p>
+<p>We can then load the dataset:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset, concatenate_datasets</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> load_dataset(<span class="st">"databricks/databricks-dolly-15k"</span>, split<span class="op">=</span><span class="st">"train"</span>)</span>
@@ -326,7 +328,13 @@ Twitter, Instagram, Telegram
 <p>To begin the actual fine-tune, run:</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">accelerate</span> launch <span class="at">-m</span> axolotl.cli.train examples/openllama-3b/lora.yml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>In about 10 seconds, the shell will prompt you to enter your W&amp;B key that you got earlier, paste it in to track your run.</p>
-<p>This step can take a while depending on the machine you’re using. While it is running, we can check on how our model’s doing through W&amp;B. <img src="wandb.png" class="img-fluid" alt="W&amp;B fine-tuning run metrics"></p>
+<p>This step can take a while depending on the machine you’re using. While it is running, we can check on how our model’s doing through W&amp;B.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="wandb.png" class="img-fluid figure-img"></p>
+<figcaption>W&amp;B fine-tuning run metrics</figcaption>
+</figure>
+</div>
 <section id="inference" class="level2">
 <h2 class="anchored" data-anchor-id="inference">Inference</h2>
 <p>After you’re done fine-tuning, all model related files should be up on your HuggingFace. To you use our model:</p>
