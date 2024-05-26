@@ -5,6 +5,8 @@ date: "2024-05-26"
 categories: [LLM, Axolotl, Code]
 ---
 
+![](https://raw.githubusercontent.com/jzhang38/TinyLlama/main/.github/TinyLlama_logo.png)
+
 # Intro
 
 I've recently been taking the [Mastering LLMs](https://maven.com/parlance-labs/fine-tuning) course by Hamel Husain and Dan Becker, one of their suggestions was to document our journey in order to supplement the learning process
