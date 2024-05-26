@@ -10,8 +10,6 @@ website:
       - about.qmd
       - icon: github
         href: https://github.com/kareemamrr
-      - icon: twitter
-        href: https://x.com/kxreem54
       - icon: linkedin
         href: https://www.linkedin.com/in/kareemamrr/
 format:
