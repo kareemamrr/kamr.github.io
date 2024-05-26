@@ -3,6 +3,7 @@ project:
 
 website:
   title: "Kareem Amr"
+  site-url: https://kareemamrr.github.io/
   navbar:
     right:
       - about.qmd
