@@ -16,9 +16,8 @@ format:
   html:
     theme:
       light: cosmo
-      dark: solar
+      # dark: solar
     css: styles.css
-    mainfont: "Inter"
     monofont: "Jetbrains Mono"
 execute:
   freeze: auto
