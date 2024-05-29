@@ -14,9 +14,7 @@ website:
         href: https://www.linkedin.com/in/kareemamrr/
 format:
   html:
-    theme:
-      light: cosmo
-      # dark: solar
+    theme: cosmo
     css: styles.css
     monofont: "Jetbrains Mono"
 execute:
