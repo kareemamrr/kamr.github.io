@@ -14,8 +14,12 @@ website:
         href: https://www.linkedin.com/in/kareemamrr/
 format:
   html:
-    theme: cosmo
+    theme:
+      light: cosmo
+      dark: solar
     css: styles.css
+    mainfont: "Inter"
+    monofont: "Jetbrains Mono"
 execute:
   freeze: auto
 
