@@ -11,7 +11,7 @@ categories: [LLM, Axolotl, Code]
 
 LLMs have proven to be of extreme benefit to most if not all people, but they're borderline useless in their "base" form. ChatGPT, Claude, Gemini and most others are all adapted to perform the conversational question answering we're used to seeing; this is all made possible with fine-tuning.
 
-In this blog entry, I will walk you through one of my first LLM fine-tuning experiment(s), with a bit of commentary here and there.
+In this blog entry, I will walk you through one of my first LLM fine-tuning experiments, with a bit of commentary here and there.
 
 # Setup
 TinyLlama, our LLM of choice, is the smallest LLM I could find; which is more than enough to get our feet wet with fine-tuning. You can find it [here](https://huggingface.co/TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T) on HuggingFace.
