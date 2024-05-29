@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>Kareem Amr</title>
+<link>https://kareemamrr.github.io/</link>
+<atom:link href="https://kareemamrr.github.io/index.xml" rel="self" type="application/rss+xml"/>
+<description></description>
+<generator>quarto-1.4.554</generator>
+<lastBuildDate>Sun, 26 May 2024 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>LLM Fine-Tuning: A Primer</title>
+  <dc:creator>Kareem Amr</dc:creator>
+  <link>https://kareemamrr.github.io/posts/llm-primer/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<p><img src="https://raw.githubusercontent.com/jzhang38/TinyLlama/main/.github/TinyLlama_logo.png" class="img-fluid" width="500"></p>
+<section id="intro" class="level1">
+<h1>Intro</h1>
+<p>LLMs have proven to be of extreme benefit to most if not all people, but they’re borderline useless in their “base” form. ChatGPT, Claude, Gemini and most others are all adapted to perform the conversational question answering we’re used to seeing; this is all made possible with fine-tuning.</p>
+<p>In this blog entry, I will walk you through one of my first LLM fine-tuning experiments, with a bit of commentary here and there.</p>
+</section>
+<section id="setup" class="level1">
+<h1>Setup</h1>
+<p>TinyLlama, our LLM of choice, is the smallest LLM I could find; which is more than enough to get our feet wet with fine-tuning. You can find it <a href="https://huggingface.co/TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T">here</a> on HuggingFace.</p>
+<p>Our dataset, will be dolly-15k by Databricks, find it <a href="https://huggingface.co/datasets/databricks/databricks-dolly-15k">here</a>.</p>
+<p>Lastly, our training library of choice is none other than Axolotl. Axolotl is one of the easiest methods to perform fine-tuning, it’s a wrapper around HuggingFace libraries such as <code>trl</code> and <code>peft</code> (don’t panic if you don’t know what these are yet) and allows you to configure your entire training run through one config file. Install it using the instructions <a href="https://github.com/OpenAccess-AI-Collective/axolotl?tab=readme-ov-file#quickstart-">here</a>. After you’re done installing it, you should find an <code>axolotl</code> directory wherever you’re at in your file system.</p>
+<p>I used <a href="https://jarvislabs.ai/">JarvisLabs</a> to perform my fine-tuning experiments since I don’t have a powerful enough GPU.</p>
+<p>We’re going to need a <a href="https://huggingface.co/">HuggingFace</a> account for this, and ideally a <a href="https://wandb.ai/site">Weights &amp; Biases</a> account; so create those if you don’t have them already.</p>
+<section id="installs" class="level2">
+<h2 class="anchored" data-anchor-id="installs">Installs</h2>
+<p>All of the packages along with their versions are stated in the Axolotl <a href="https://github.com/OpenAccess-AI-Collective/axolotl/blob/main/requirements.txt">requirements.txt</a>, we will just need to install two more.</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb1-1">pip install datasets <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"huggingface_hub[cli]"</span></span></code></pre></div>
+</section>
+<section id="api-keys" class="level2">
+<h2 class="anchored" data-anchor-id="api-keys">API Keys</h2>
+<p>We’re going to push our trained model and dataset to HuggingFace, and we’ll also track our fine-tuning runs with W&amp;B, so we’re going to need our API keys for each of those.</p>
+<p>For HF, go to your profile by clicking your avatar at the upper right corner of the screen, Settings -&gt; Access Tokens -&gt; New Token. Create one, give it <code>write</code> permissions and copy it. Then in the terminal run <code>huggingface-cli login</code>, paste your token and hit Enter. To verify that you’re logged in, you can run <code>huggingface-cli whoami</code>.</p>
+<p>For W&amp;B, head to the <a href="https://wandb.ai/authorize">authorize</a> page, and copy your key from there.</p>
+</section>
+</section>
+<section id="preprocessing" class="level1">
+<h1>Preprocessing</h1>
+<p>Now would be a good time to check the <a href="https://huggingface.co/datasets/databricks/databricks-dolly-15k">data</a> for yourself, HuggingFace offers a superb dataset viewer.</p>
+<p><img src="https://kareemamrr.github.io/posts/llm-primer/data.png" class="img-fluid"></p>
+<p>We can then load the dataset:</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> datasets <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> load_dataset, concatenate_datasets</span>
+<span id="cb2-2"></span>
+<span id="cb2-3">dataset <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> load_dataset(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"databricks/databricks-dolly-15k"</span>, split<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"train"</span>)</span>
+<span id="cb2-4"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(dataset)</span>
+<span id="cb2-5"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(dataset[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>])</span></code></pre></div>
+<p>We can see that the dataset has about 15k rows, each row has an <code>instruction</code>, <code>context</code>, <code>response</code>, and an extra <code>category</code> column. The <code>instruction</code> is what we prompt our model with, the <code>context</code> is any additional information we might plug into our prompt so that our model will use it to answer our query (you don’t have to have inputs for all of the rows), and the <code>response</code> is what we expect back from our model. Now 15k rows is a bit of an overkill for our first fine-tune, so we’re going to sample the data. To do this we’re going to sample 1k rows from each of the <code>general_qa</code>, <code>closed_qa</code>, and <code>open_qa</code> categories.</p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Filter the dataset for 'general_qa' and 'closed_qa'</span></span>
+<span id="cb3-2">general_qa_dataset <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> dataset.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(<span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">lambda</span> example: example[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'category'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'general_qa'</span>)</span>
+<span id="cb3-3">closed_qa_dataset <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> dataset.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(<span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">lambda</span> example: example[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'category'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'closed_qa'</span>)</span>
+<span id="cb3-4">open_qa_dataset <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> dataset.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">filter</span>(<span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">lambda</span> example: example[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'category'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'open_qa'</span>)</span>
+<span id="cb3-5"></span>
+<span id="cb3-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Sample 1000 rows from each filtered dataset</span></span>
+<span id="cb3-7">general_qa_sample <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> general_qa_dataset.shuffle(seed<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>).select(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>))</span>
+<span id="cb3-8">closed_qa_sample <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> closed_qa_dataset.shuffle(seed<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>).select(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>))</span>
+<span id="cb3-9">open_qa_sample <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> open_qa_dataset.shuffle(seed<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>).select(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>))</span>
+<span id="cb3-10"></span>
+<span id="cb3-11"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">assert</span> general_qa_sample.features.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">type</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> closed_qa_sample.features.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">type</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> open_qa_sample.features.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">type</span></span>
+<span id="cb3-12"></span>
+<span id="cb3-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Combine the two samples into a single dataset</span></span>
+<span id="cb3-14">combined_dataset <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> concatenate_datasets([general_qa_sample, closed_qa_sample, open_qa_sample])</span>
+<span id="cb3-15"></span>
+<span id="cb3-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Verify the result</span></span>
+<span id="cb3-17"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(combined_dataset)</span></code></pre></div>
+<p>As an extra step, we’re going to rename our dataset columns, we’ll see why later.</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb4-1">combined_dataset <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> combined_dataset.rename_column(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"context"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"input"</span>)</span>
+<span id="cb4-2">combined_dataset <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> combined_dataset.rename_column(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"response"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"output"</span>)</span></code></pre></div>
+<p>Now we are ready to push our sampled dataset to our HuggingFace.</p>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb5-1">combined_dataset.push_to_hub(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"kareemamrr/databricks-dolly-3k"</span>)</span></code></pre></div>
+</section>
+<section id="configuration" class="level1">
+<h1>Configuration</h1>
+<p>Now for fine-tuning. As previously mentioned, Axolotl allows us to completely configure any part of our fine-tuning process using one configuration file, and it provides us with ready config files for most popular models. The one we’ll be using is <code>axolotl/examples/tiny-llama/lora.yml</code> to train our model using LoRA (a form of parameter-efficient fine-tuning). This file contains config parameters for the base model we’ll pull from HuggingFace, the tokenizer, LoRA/QLoRA parameters and much more. Since Axolotl provides us with pretty reasonable defaults to start with, we’ll only ammend a few sections.</p>
+<section id="base-model" class="level2">
+<h2 class="anchored" data-anchor-id="base-model">Base Model</h2>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb6-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">base_model</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T</span></span>
+<span id="cb6-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">model_type</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> LlamaForCausalLM</span></span>
+<span id="cb6-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tokenizer_type</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> LlamaTokenizer</span></span></code></pre></div>
+</section>
+<section id="dataset" class="level2">
+<h2 class="anchored" data-anchor-id="dataset">Dataset</h2>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb7-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">datasets</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span></span>
+<span id="cb7-2"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">  </span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">-</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> </span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">path</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> &lt;your_hf_username&gt;/databricks-dolly-15k</span></span>
+<span id="cb7-3"><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">    </span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">type</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> alpaca</span></span>
+<span id="cb7-4"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">dataset_prepared_path</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span></span>
+<span id="cb7-5"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">val_set_size</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> </span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.05</span></span>
+<span id="cb7-6"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">output_dir</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> ./outputs/lora-out</span></span></code></pre></div>
+</section>
+<section id="hf-repo" class="level2">
+<h2 class="anchored" data-anchor-id="hf-repo">HF repo</h2>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb8-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">hub_model_id</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> &lt;username/repo_id&gt;</span></span></code></pre></div>
+</section>
+<section id="wb-runs" class="level2">
+<h2 class="anchored" data-anchor-id="wb-runs">W&amp;B Runs</h2>
+<div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb9-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">wandb_project</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> &lt;project_name&gt;</span></span>
+<span id="cb9-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">wandb_entity</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> &lt;your_username&gt;</span></span>
+<span id="cb9-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">wandb_name</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">:</span><span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;"> &lt;optional_run_name&gt;</span></span></code></pre></div>
+<p>Notice how we specify our dataset type as <code>alpaca</code>. This is actually to tell Axolotl to format our dataset rows into the Alpaca prompt template. A prompt template is essentially the “key” that we use to overcome the LLM’s autocomplete nature that it was pretrained on, and adapt it to answer questions or perform tasks. It is just a way to organize an instruction and its response (and optionally its input), into a predetermined format so that the LLM learns; that’s the reason why we renamed our dataset columns earlier to the Alpaca column names.</p>
+</section>
+</section>
+<section id="fine-tuning" class="level1">
+<h1>Fine-tuning</h1>
+<p>Finally, we can fine-tune. This is the easiest step. It is recommended we first run:</p>
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">CUDA_VISIBLE_DEVICES</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">""</span> <span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">python</span> <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span> axolotl.cli.preprocess examples/tiny-llama/lora.yml</span></code></pre></div>
+<p>so that Axolotl preprocesses our data according to the dataset type (prompt template) we specified in our config file. An example result would be:</p>
+<pre><code>&lt;s&gt; Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+### Instruction:
+Identify the odd one out.
+
+### Input:
+Twitter, Instagram, Telegram
+
+### Response:
+ The odd one out is Telegram. Twitter and Instagram are social media platforms mainly for sharing information, images and videos while Telegram is a cloud-based instant messaging and voice-over-IP service.&lt;/s&gt;</code></pre>
+<p>To begin the actual fine-tune, run:</p>
+<div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">accelerate</span> launch <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span> axolotl.cli.train examples/openllama-3b/lora.yml</span></code></pre></div>
+<p>In about 10 seconds, the shell will prompt you to enter your W&amp;B key that you got earlier, paste it in to track your run.</p>
+<p>This step can take a while depending on the machine you’re using. While it is running, we can check on how our model’s doing through W&amp;B.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://kareemamrr.github.io/posts/llm-primer/wandb.png" class="img-fluid figure-img"></p>
+<figcaption>W&amp;B fine-tuning run metrics</figcaption>
+</figure>
+</div>
+</section>
+<section id="inference" class="level1">
+<h1>Inference</h1>
+<p>After you’re done fine-tuning, all model related files should be up on your HuggingFace. To you use our model:</p>
+<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> peft <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> AutoPeftModelForCausalLM</span>
+<span id="cb13-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> transformers <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> AutoTokenizer</span>
+<span id="cb13-3"></span>
+<span id="cb13-4">model_id<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'&lt;username/repo_id&gt;'</span></span>
+<span id="cb13-5">model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> AutoPeftModelForCausalLM.from_pretrained(model_id).cuda()</span>
+<span id="cb13-6">tokenizer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> AutoTokenizer.from_pretrained(model_id)</span></code></pre></div>
+<p>We will need an extra piece of code to inject our dataset rows into a prompt template, similar to what Axolotl did automatically for us:</p>
+<div class="sourceCode" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> prompt_with_inp(inst, inp):</span>
+<span id="cb14-2">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.</span></span>
+<span id="cb14-3"></span>
+<span id="cb14-4"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">### Instruction:</span></span>
+<span id="cb14-5"><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>inst<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb14-6"></span>
+<span id="cb14-7"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">### Input:</span></span>
+<span id="cb14-8"><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>inp<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb14-9"></span>
+<span id="cb14-10"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">### Response:</span></span>
+<span id="cb14-11"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span>
+<span id="cb14-12"></span>
+<span id="cb14-13"></span>
+<span id="cb14-14"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> prompt_wo_inp(inst):</span>
+<span id="cb14-15">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> <span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"""Below is an instruction that describes a task, write a response that appropriately completes the request.</span></span>
+<span id="cb14-16"></span>
+<span id="cb14-17"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">### Instruction:</span></span>
+<span id="cb14-18"><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>inst<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb14-19"></span>
+<span id="cb14-20"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">### Response:</span></span>
+<span id="cb14-21"><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"""</span></span></code></pre></div>
+<p>and lastly a wrapper function to return the response:</p>
+<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> prompt_tok(inst, inp<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>):</span>
+<span id="cb15-2">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> inp <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">is</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">None</span>:</span>
+<span id="cb15-3">        _p <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> prompt_wo_inp(inst)</span>
+<span id="cb15-4">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">else</span>:</span>
+<span id="cb15-5">        _p <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> prompt_with_inp(inst, inp)</span>
+<span id="cb15-6">    input_ids <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tokenizer(_p, return_tensors<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"pt"</span>, truncation<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>).input_ids.cuda()</span>
+<span id="cb15-7">    out_ids <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model.generate(input_ids<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>input_ids, max_new_tokens<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">500</span>, do_sample<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>)</span>
+<span id="cb15-8">    ids <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> out_ids.detach().cpu().numpy()</span>
+<span id="cb15-9">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> tokenizer.batch_decode(ids, skip_special_tokens<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>)[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]</span></code></pre></div>
+<p>We can then try our model:</p>
+<div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb16-1">inst <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Alice's parents have three daughters: Amy, Jessy, and what’s the name of the third daughter?"</span></span>
+<span id="cb16-2"></span>
+<span id="cb16-3">out <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> prompt_tok(inst)</span>
+<span id="cb16-4"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(out.strip())</span></code></pre></div>
+<div class="sourceCode" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb17-1">inst <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Who was boxer John Baldwin"</span></span>
+<span id="cb17-2">inp <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Known as 'The Mad' Baldwin, he turned pro in 1970 and lost a decision to Marvin Hagler in 1975. In 1977 he took on Rocky Mosley Jr in the ill-fated U.S. Championship Tournament, but lost via K.O. In 1978 he lost a decision to Marvin Johnson, and retired a year later."</span></span>
+<span id="cb17-3"></span>
+<span id="cb17-4">out <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> prompt_tok(inst, inp)</span>
+<span id="cb17-5"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(out.strip())</span></code></pre></div>
+
+
+</section>
+
+ ]]></description>
+  <category>LLM</category>
+  <category>Axolotl</category>
+  <category>Code</category>
+  <guid>https://kareemamrr.github.io/posts/llm-primer/</guid>
+  <pubDate>Sun, 26 May 2024 00:00:00 GMT</pubDate>
+</item>
+</channel>
+</rss>
