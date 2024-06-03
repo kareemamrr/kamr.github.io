@@ -42,6 +42,13 @@
     "text": "W&B Runs\nwandb_project: &lt;project_name&gt;\nwandb_entity: &lt;your_username&gt;\nwandb_name: &lt;optional_run_name&gt;\nNotice how we specify our dataset type as alpaca. This is actually to tell Axolotl to format our dataset rows into the Alpaca prompt template. A prompt template is essentially the “key” that we use to overcome the LLM’s autocomplete nature that it was pretrained on, and adapt it to answer questions or perform tasks. It is just a way to organize an instruction and its response (and optionally its input), into a predetermined format so that the LLM learns; that’s the reason why we renamed our dataset columns earlier to the Alpaca column names."
   },
   {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Yet Another Blog",
+    "section": "",
+    "text": "The Ten Commandments of Fine Tuning\n\n\n\n\n\n\nLLM\n\n\n\n\n\n\n\n\n\nJun 3, 2024\n\n\nKareem Amr\n\n\n\n\n\n\n\n\n\n\n\n\nLLM Fine-Tuning: A Primer\n\n\n\n\n\n\nLLM\n\n\nAxolotl\n\n\nCode\n\n\n\n\n\n\n\n\n\nMay 26, 2024\n\n\nKareem Amr\n\n\n\n\n\n\nNo matching items"
+  },
+  {
     "objectID": "about.html",
     "href": "about.html",
     "title": "About",
@@ -49,10 +56,87 @@
     "text": "Documenting my learning journey, (kinda) guides, and some thoughts"
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Yet Another Blog",
+    "objectID": "posts/ten-commandments/index.html",
+    "href": "posts/ten-commandments/index.html",
+    "title": "The Ten Commandments of Fine Tuning",
     "section": "",
-    "text": "LLM Fine-Tuning: A Primer\n\n\n\n\n\n\nLLM\n\n\nAxolotl\n\n\nCode\n\n\n\n\n\n\n\n\n\nMay 26, 2024\n\n\nKareem Amr\n\n\n\n\n\n\nNo matching items"
+    "text": "Although fine tuning LLMs can’t exactly be considered a new science, it carries a lot of nuances that many fail to recognize; and also carries over certain practices from traditional data science/machine learning. Kyle Corbitt, creator of OpenPipe, recently had a talk titled The Ten Commandments of Fine Tuning. In this blog post, I will list and explain these ten commandments while also providing further commentary of my own."
+  },
+  {
+    "objectID": "posts/ten-commandments/index.html#do-not-fine-tune",
+    "href": "posts/ten-commandments/index.html#do-not-fine-tune",
+    "title": "The Ten Commandments of Fine Tuning",
+    "section": "1. Do not fine tune",
+    "text": "1. Do not fine tune\nThis will always be your default starting point. For any use case you might have, don’t fine tune. Start with prompting an already established model (GPT-4) first, always. For a number of reasons:\n\nPrompting offers faster iteration speed\nBetter, smoother experience\nCan still be flexible (to a point) e.g.: dynamic few-shot examples using RAG\n\nGenerally, you would only fine-tune in case one or more of the following points are satisfied:\n\nYou can’t hit your quality target\n\nPrompting can only take you so far.\n\nYou can’t hit your latency target\n\nA smaller, specialized fine-tuned model can be faster than a prompted general purpose LLM\n\nYou can’t hit your cost target\n\nGPT-4 can be very powerful, but depending on your calls per day, it can be very expensive\nConversely, fine-tuning an LLM may require a sizable investment upfront, but you make your money back eventually"
+  },
+  {
+    "objectID": "posts/ten-commandments/index.html#always-start-with-a-prompt",
+    "href": "posts/ten-commandments/index.html#always-start-with-a-prompt",
+    "title": "The Ten Commandments of Fine Tuning",
+    "section": "2. Always start with a prompt",
+    "text": "2. Always start with a prompt\nIn the case where we might already know beforehand that fine-tuning is necessary, for one or more of the above reasons; we should still start with prompting. For two reasons:\n\nPrompting gives us a nice baseline that we could work off of.\n\nWhether it be quality, latency or cost; we need to know if we’re going in the right direction.\n\nPrompting is usually a good proxy to assess if the task at hand is possible at all or not.\n\nIf it (kinda) works with prompting, there’s a ~90% chance fine-tuning will make it better.\nIf it doesn’t work with prompting, there’s only a ~20-25% chance it will work with fine-tuning.\nGenerally, the more your task diverges from being a general purpose chatbot, the better it’ll do with fine-tuning.\n\n\nThe general playbook can be summarized by: 0–{GPT-4}–&gt; 1–{Fine-tuned model}–&gt; 100. GPT-4 to prototype, fine-tune to scale."
+  },
+  {
+    "objectID": "posts/ten-commandments/index.html#review-your-data",
+    "href": "posts/ten-commandments/index.html#review-your-data",
+    "title": "The Ten Commandments of Fine Tuning",
+    "section": "3. Review your data",
+    "text": "3. Review your data\nLLMs are as black box as they come, so always review every part of the data pipeline. You want to get a good sense of the distribution at hand, so you could make informed assumptions about what type of tests to write. Going a step further than that, always review your LLM results as well, log traces and query-response calls are crucial; tools like Langsmith and Braintrust are built specifically for that."
+  },
+  {
+    "objectID": "posts/ten-commandments/index.html#use-your-data",
+    "href": "posts/ten-commandments/index.html#use-your-data",
+    "title": "The Ten Commandments of Fine Tuning",
+    "section": "4. Use your data",
+    "text": "4. Use your data\nYour LLM will inevitably do a bad job on some portion of the data, that’s the class of examples you should focus on. To actually determine what constitutes a “bad job”, critiquing can either be done manually by an expert or automatically by a LLM (LLM-as-a-judge). Once you’ve determined those examples, you would then figure out why the model isn’t doing well on them, and proceed to act accordingly in a number of ways:\n\nManually relabel (using feedback from the expert)\nFix the examples’ instructions (maybe even modify your prompt)\n“Heal” using a LLM"
+  },
+  {
+    "objectID": "posts/ten-commandments/index.html#some-bad-data-is-okay",
+    "href": "posts/ten-commandments/index.html#some-bad-data-is-okay",
+    "title": "The Ten Commandments of Fine Tuning",
+    "section": "5. Some bad data is okay",
+    "text": "5. Some bad data is okay\nThis one is a bit contradicting and definitively controversial, so take it with a grain of salt. The whole idea is your dataset should be correct on average. Because you won’t ever always get perfect instructions in the wild, a few bad apples won’t hurt since LLMs are good at generalization anyway. In addition to that, 90% of the time your LLM will overfit when fine-tuning, so a bit of natural regularization is welcome. It’s worth noting though that this does not work for small models, e.g.: tiny-llama."
+  },
+  {
+    "objectID": "posts/ten-commandments/index.html#reserve-a-test-set",
+    "href": "posts/ten-commandments/index.html#reserve-a-test-set",
+    "title": "The Ten Commandments of Fine Tuning",
+    "section": "6. Reserve a test set",
+    "text": "6. Reserve a test set\nNothing new here, always reserve a test set. Your test shouldn’t exclusively consist of tough examples though, it should be random and representative of your training set."
+  },
+  {
+    "objectID": "posts/ten-commandments/index.html#choose-an-appropriate-model",
+    "href": "posts/ten-commandments/index.html#choose-an-appropriate-model",
+    "title": "The Ten Commandments of Fine Tuning",
+    "section": "7. Choose an appropriate model",
+    "text": "7. Choose an appropriate model\n\nFine-tuning is a tradeoff between the size of the dataset needed and model size (and performance); and subsequently, the eventual cost. Examine the above chart for example, it shows real life metrics for a specific task, across the listed models. In your particular use case the mileage may vary, but the general concept still holds. When prompting with GPT-4 you’ll need relatively no data, but it incurs the highest cost per tokens. As you decrease your model size, your training examples count grow, and inversely your cost decreases. For most cases, 7B/8B parameter models seem to be the sweet spot. In practice, you’ll find you can match GPT-4 performance for a specific task with 1-2K examples, but with significant cost reductions."
+  },
+  {
+    "objectID": "posts/ten-commandments/index.html#write-fast-evals",
+    "href": "posts/ten-commandments/index.html#write-fast-evals",
+    "title": "The Ten Commandments of Fine Tuning",
+    "section": "8. Write fast evals",
+    "text": "8. Write fast evals\nQuality evaluations are probably the most crucial part of any ML system, LLMs are no exceptions. When fine-tuning, “vibe checks” are fine in the beginning, but you want to create a streamlined evaluation process to quickly evaluate performance and debug issues. Those fast evals are mainly separated into two parts:\n\nL1 evals\n\nThese are unit tests and assertions, meant to be ran quickly against LLM responses for basic quality and validity checks. They are your first line of defense.\n\nL2 evals\n\nThese are further subdivided into human & model evals\nHuman evals are provided by an expert (can be yourself)\nYou can then document those human evals per response and use them to align a separate LLM to act as a critic for a more automated process (LLM-as-a-judge).\n\n\nComponents such as “critic” LLMs and “healer” LLMs are a meta-problem within your larger task, they should only be done using prompting and using the largest model you can afford."
+  },
+  {
+    "objectID": "posts/ten-commandments/index.html#write-slow-evals",
+    "href": "posts/ten-commandments/index.html#write-slow-evals",
+    "title": "The Ten Commandments of Fine Tuning",
+    "section": "9. Write slow evals",
+    "text": "9. Write slow evals\nSlow evals are more concerned with the business outcome on a product level. LLMs can have good calls in isolation but can still interact badly with other parts of the system. Log traces can be useful in this case, but a more robust process of objectively measuring how well your system is doing is a must."
+  },
+  {
+    "objectID": "posts/ten-commandments/index.html#dont-fire-forget",
+    "href": "posts/ten-commandments/index.html#dont-fire-forget",
+    "title": "The Ten Commandments of Fine Tuning",
+    "section": "10. Don’t fire & forget",
+    "text": "10. Don’t fire & forget\nThis is still a data science problem, so real world distribution shifts still exist. Constantly monitor your model’s prompts and responses and re-run your evals. This applies to your critic and healer LLMs as well, to get those as aligned as possible to your expert, they need constant reiteration."
+  },
+  {
+    "objectID": "posts/ten-commandments/index.html#bonus-create-curate-filter-your-data",
+    "href": "posts/ten-commandments/index.html#bonus-create-curate-filter-your-data",
+    "title": "The Ten Commandments of Fine Tuning",
+    "section": "Bonus: Create, curate & filter your data",
+    "text": "Bonus: Create, curate & filter your data\nAt some point in time you will be forced to synthetically generate data. In order to do that you will have to reiterate on prompts for a while to get it right. But afterwards, the time invested in writing L1 and L2 evals will pay off:\n\nUse L1 evals to filter out invalid data\nUse L2 evals to filter out not good enough data\n\nLilac is one tool that is designed specifically for this.\nObviously, each use case is different, and not all of these rules will apply to your particular task. However these guidelines will easily take you ~90% of the way."
   }
 ]

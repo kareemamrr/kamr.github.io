@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/ten-commandments/index.html",
       "/posts/llm-primer/index.html"
     ]
   }
